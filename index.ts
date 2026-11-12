@@ -711,7 +711,10 @@ export default function claudeView(pi: ExtensionAPI) {
 	pi.registerComposerShape({ label: "Claude Code", description: "Prompt between two rules", style: PROMPT });
 	for (const [id, value] of Object.entries(LOOK)) {
 		try {
-			lookup(id)?.override(pi.pi.settings, value);
+			const handle = lookup(id);
+			// A theme the user picked (config.yml, /settings) wins; ours is only the default.
+			if (id.startsWith("theme.") && handle?.provenance(pi.pi.settings) !== "default") continue;
+			handle?.override(pi.pi.settings, value);
 		} catch (err) {
 			pi.logger.warn(`claude-view: cannot set ${id}: ${err}`);
 		}

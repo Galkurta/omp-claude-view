@@ -42,6 +42,8 @@ The plugin ships `claude-dark` and `claude-light` themes with Claude Code's colo
 
 `CLAUDE_CONFIG_DIR` is honored when set.
 
+Prefer omp's own theme? Pick it in `/settings` (or set `theme.dark` / `theme.light` in `config.yml`) and restart: a theme you chose always wins over the plugin's.
+
 ## Settings it sets
 
 At runtime only (nothing is written to your config): the two themes, the composer shape, a custom status line, hidden thinking blocks, and transcript presenters. Turning the plugin off restores your own settings.

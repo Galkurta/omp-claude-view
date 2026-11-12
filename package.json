@@ -1,6 +1,6 @@
 {
 	"name": "omp-claude-view",
-	"version": "0.1.1",
+	"version": "0.1.2",
 	"description": "Claude Code's look for oh-my-pi (omp): tool rows, prompt, spinner, footer, permission dialog, /settings and themes that follow your Claude Code theme",
 	"type": "module",
 	"license": "MIT",

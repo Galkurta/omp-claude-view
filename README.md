@@ -1,26 +1,18 @@
 # omp-claude-view
 
-Claude Code's look for [oh-my-pi](https://github.com/can1357/oh-my-pi) (`omp`).
+Claude Code's look for pi / [oh-my-pi](https://github.com/can1357/oh-my-pi).
 
 https://github.com/user-attachments/assets/7676a89b-6859-48df-ac08-c51995cb9ff5
 
-The plugin only changes how omp draws things. Sessions, models, tools and the context sent to the model stay the same. Press `Ctrl+O` to see omp's full tool cards.
+The plugin only changes how the TUI draws things. Sessions, models, tools and the context sent to the model stay the same. Press `Ctrl+O` to see the full tool cards.
 
 ## Install
 
 ```sh
-omp plugin install omp-claude-view
+pi install npm:omp-claude-view
 ```
 
-or straight from GitHub:
-
-```sh
-omp plugin install github:Galkurta/omp-claude-view
-```
-
-Restart omp. To turn it off: `omp plugin disable omp-claude-view`.
-
-Requires omp (tested on v18.19). The plugin uses omp's own extension API and components, so it does not load in upstream `pi`.
+Restart after installing; remove the package to turn it off.
 
 ## What changes
 

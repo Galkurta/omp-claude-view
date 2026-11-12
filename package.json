@@ -1,0 +1,24 @@
+{
+	"name": "omp-claude-view",
+	"version": "0.1.0",
+	"description": "Claude Code's look for oh-my-pi (omp): tool rows, prompt, spinner, footer, permission dialog, /settings and themes that follow your Claude Code theme",
+	"type": "module",
+	"license": "MIT",
+	"author": "Galkurta",
+	"homepage": "https://github.com/Galkurta/omp-claude-view#readme",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/Galkurta/omp-claude-view.git"
+	},
+	"bugs": {
+		"url": "https://github.com/Galkurta/omp-claude-view/issues"
+	},
+	"keywords": ["pi-package", "omp", "oh-my-pi", "claude-code", "theme", "tui", "extension"],
+	"files": ["index.ts", "patches.ts", "settings.ts", "spinner-verbs.json", "themes/", "README.md", "LICENSE"],
+	"omp": {
+		"extensions": ["./index.ts"]
+	},
+	"pi": {
+		"video": "https://raw.githubusercontent.com/Galkurta/omp-claude-view/main/omp-claude-view-demo.mp4"
+	}
+}

@@ -533,6 +533,20 @@ export function installPatches(): void {
 			);
 		})
 		.catch(() => {});
+	// The `ask` tool's form dialog (`html-form/dialog`): Claude Code's AskUserQuestion layout.
+	import("@oh-my-pi/pi-tui/html-form/dialog")
+		.then(mod => {
+			for (const cls of Object.values(mod as Record<string, unknown>)) {
+				const proto = (cls as { prototype?: Proto } | undefined)?.prototype;
+				if (typeof proto?.render !== "function" || typeof proto?.handleInput !== "function") continue;
+				patch(cls, "render", orig =>
+					function (this: object, ...args: unknown[]) {
+						return askRows(orig.apply(this, args) as Rows, `${theme.isLight}:${Number(args[0]) || 80}`);
+					},
+				);
+			}
+		})
+		.catch(() => {});
 }
 
 // Built on first draw (the theme is not loaded when this module is), stable per theme variant.
@@ -661,6 +675,88 @@ function claudeAnswer(label: string): string | undefined {
 // Claude Code's titles by tool ("Allow tool: bash" in omp).
 const TITLES: Record<string, string> = { bash: "Bash command", edit: "Edit file", ast_edit: "Edit file", write: "Create file", read: "Read file", fetch: "Fetch", eval: "Run code" };
 const SUGGEST = (s: string) => `\x1b[38;2;${cc("suggestion")}m${s}\x1b[39m`;
+
+// ── Ask form. omp frames the form in a box titled `Ask`, with `○`/`◉`/`☐` choice rows and
+// a key-hint row. Claude Code draws a dim rule, numbered choices (`❯ 1. label`, the chosen
+// one green with `✔`), `Type something.` for the free-text row and `Enter to select · …`.
+const CHOICE = /^(\s*)(❯ |  )(○|◉|●|◯|☐|☑|☒|✓|\[ \]|\[x\]) (.*)$/u;
+const MULTI: Record<string, true> = { "☐": true, "☑": true, "☒": true, "[ ]": true, "[x]": true };
+const CHECKED: Record<string, true> = { "◉": true, "●": true, "☑": true, "☒": true, "✓": true, "[x]": true };
+const KEY_NAMES: Record<string, string> = { "⏎": "Enter", "↵": "Enter", "⎋": "Esc", "⇥": "Tab", "␣": "Space", space: "Space" };
+const HINT_VERBS: Record<string, string> = { choose: "select", next: "select", move: "navigate", "next field": "switch questions", note: "add notes" };
+
+/** omp's `⏎ choose · ↑/↓ move · ⇥ next field · ⎋ cancel` → Claude Code's `Enter to select · …`. */
+function askHints(text: string): string {
+	return text
+		.split(" · ")
+		.flatMap(part => {
+			if (part === "type your own") return [];
+			const m = /^(\S+) (.+)$/.exec(part);
+			if (!m) return [part];
+			const keys = m[1].split("/").map(k => KEY_NAMES[k] ?? KEY_NAMES[k.toLowerCase()] ?? k).join("/");
+			return [`${keys} to ${HINT_VERBS[m[2]] ?? m[2]}`];
+		})
+		.join(" · ");
+}
+
+const askRows = memo((rows, key) => {
+	const width = Number(key.split(":")[1]) || 80;
+	const top = /^╭─ (.+?) ─*╮$/.exec(plain(rows[0] ?? ""));
+	if (!top) return rows;
+	const out = [theme.fg("dim", "─".repeat(width))];
+	// A custom title or a page indicator (`Ask · 1/2`) stays as the first line.
+	const title = top[1].replace(/^Ask(?: · )?/, "");
+	if (title) out.push(theme.bold(title));
+	let n = 0;
+	let hints: string | undefined;
+	let divider = false;
+	for (const row of rows.slice(1)) {
+		const text = plain(row);
+		if (/^╰─*╯$/.test(text)) continue;
+		if (/^├─*┤$/.test(text)) {
+			divider = true;
+			continue;
+		}
+		const vis = visible(row);
+		const bars = vis.flatMap(([, ch], i) => (ch === "│" ? [i] : []));
+		// Frame rows are `│ content │`: one cell of padding each side.
+		const inner = bars.length >= 2 && bars[0] === 0 ? cut(row, 2, bars[bars.length - 1] - 1) : row;
+		const content = plain(inner).replace(/\s+$/, "");
+		if (divider) {
+			hints = content.trim();
+			continue;
+		}
+		const choice = CHOICE.exec(content);
+		if (!choice) {
+			// Wrapped option labels continue on deeper-indented rows; anything else ends a group.
+			if (!/^\s{4,}\S/.test(content)) n = 0;
+			out.push(inner);
+			continue;
+		}
+		const [, indent, cursor, mark, rest] = choice;
+		n++;
+		const focused = cursor.startsWith("❯");
+		const multi = MULTI[mark] === true;
+		const checked = CHECKED[mark] === true;
+		const lead = `${indent}${focused ? SUGGEST("❯") : " "}${theme.fg("dim", ` ${n}.`)} ${multi ? `${checked ? "[✔]" : "[ ]"} ` : ""}`;
+		const other = /^Other: ?/.exec(rest);
+		if (other) {
+			// The free-text row holds omp's live input (cursor included): keep its cells after the
+			// label and rename the placeholder.
+			const from = indent.length + cursor.length + mark.length + 1 + other[0].length;
+			const value = cut(inner, from, width).replace("type your own", "Type something.");
+			out.push(`${lead}${plain(value).trim() ? value : theme.fg("dim", "Type something.")}`);
+			continue;
+		}
+		const body = focused ? SUGGEST(theme.bold(rest)) : checked && !multi ? theme.fg("success", `${rest} ✔`) : rest;
+		out.push(`${lead}${body}`);
+	}
+	if (hints) {
+		const line = askHints(hints);
+		out.push("", theme.fg("dim", line.length > width ? `${line.slice(0, width - 1)}…` : line));
+	}
+	return out;
+});
 
 const approvalRows = memo((rows, key) => {
 	const width = Number(key.split(":")[1]) || 80;

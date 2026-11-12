@@ -41,6 +41,7 @@ Requires omp (tested on v18.19). The plugin uses omp's own extension API and com
 
 **Dialogs and screens**
 - Permission dialog: `Bash command`, the command, `Do you want to proceed?`, `❯ 1. Yes`. The waiting tool row reads `Waiting for permission…`.
+- The `ask` form drops omp's box for Claude Code's question layout: a dim rule, numbered choices (`❯ 1. red`, the chosen one green with `✔`), `Type something.` for free text, and `Enter to select · ↑/↓ to navigate · Esc to cancel`.
 - `/settings` opens a Claude Code-style config screen (Status, Config, Usage, Stats) with search; omp's own settings screen stays one keypress away.
 
 ## Colors follow your Claude Code theme

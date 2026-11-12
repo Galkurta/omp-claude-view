@@ -2,7 +2,7 @@
 
 Claude Code's look for [oh-my-pi](https://github.com/can1357/oh-my-pi) (`omp`).
 
-VIDEO_URL
+https://github.com/user-attachments/assets/7676a89b-6859-48df-ac08-c51995cb9ff5
 
 The plugin only changes how omp draws things. Sessions, models, tools and the context sent to the model stay the same. Press `Ctrl+O` to see omp's full tool cards.
 
